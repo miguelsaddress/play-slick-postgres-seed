@@ -1,0 +1,6 @@
+name = Name
+age = Age
+home = Home
+
+# Person model messages
+person.add = Add Person

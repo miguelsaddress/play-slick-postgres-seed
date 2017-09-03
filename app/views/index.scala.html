@@ -1,0 +1,24 @@
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+@import org.webjars.play.WebJarsUtil
+
+@(person: Form[CreatePersonForm])(implicit request:RequestHeader, messages: Messages, assets: AssetsFinder, webJarsUtil: WebJarsUtil)
+
+@import helper._
+@import b3.inline.fieldConstructor
+
+@main(messages("app.welcome")) {
+	<script type='text/javascript' src='@assets.path("javascripts/index.js")'></script>
+
+  <div class="row">
+  	<ul id="persons"></ul>
+
+    @form(action = routes.PersonController.addPerson()) {
+        @CSRF.formField 
+        @b3.text(person("name"), 'placeholder -> messages("person.name"), 'class -> "form-control input-lg")
+        @b3.text(person("age"), 'placeholder -> messages("person.age"), 'class -> "form-control input-lg")
+        @b3.submit('class -> "btn btn-info"){ @messages("person.add") }
+    }
+    
+  </div>
+}
