@@ -1,11 +1,13 @@
 # --- !Ups
 
-create table "people" (
+create table users (
   "id" BIGSERIAL NOT NULL PRIMARY KEY,
   "name" VARCHAR NOT NULL,
-  "age" INT NOT NULL
+  "username" VARCHAR NOT NULL,
+  "email" VARCHAR NOT NULL,
+  "password" VARCHAR NOT NULL
 );
 
 # --- !Downs
 
-DROP TABLE IF EXISTS "people";
+DROP TABLE IF EXISTS "users";

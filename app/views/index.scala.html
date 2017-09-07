@@ -2,7 +2,7 @@
 @import controllers.AssetsFinder
 @import org.webjars.play.WebJarsUtil
 
-@(person: Form[CreatePersonForm])(implicit request:RequestHeader, messages: Messages, assets: AssetsFinder, webJarsUtil: WebJarsUtil)
+@(userForm: Form[CreateUserForm])(implicit request:RequestHeader, messages: Messages, assets: AssetsFinder, webJarsUtil: WebJarsUtil)
 
 @import helper._
 @import b3.inline.fieldConstructor
@@ -11,13 +11,15 @@
 	<script type='text/javascript' src='@assets.path("javascripts/index.js")'></script>
 
   <div class="row">
-  	<ul id="persons"></ul>
+  	<ul id="users"></ul>
 
-    @form(action = routes.PersonController.addPerson()) {
+    @form(action = routes.UserController.addUser()) {
         @CSRF.formField 
-        @b3.text(person("name"), 'placeholder -> messages("person.name"), 'class -> "form-control input-lg")
-        @b3.text(person("age"), 'placeholder -> messages("person.age"), 'class -> "form-control input-lg")
-        @b3.submit('class -> "btn btn-info"){ @messages("person.add") }
+        @b3.text(userForm("name"), 'placeholder -> messages("userForm.name"), 'class -> "form-control input-lg")
+        @b3.text(userForm("username"), 'placeholder -> messages("userForm.username"), 'class -> "form-control input-lg")
+        @b3.text(userForm("email"), 'placeholder -> messages("userForm.email"), 'class -> "form-control input-lg")
+        @b3.text(userForm("password"), 'placeholder -> messages("userForm.password"), 'class -> "form-control input-lg")
+        @b3.submit('class -> "btn btn-info"){ @messages("userForm.add") }
     }
     
   </div>

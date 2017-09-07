@@ -1,6 +1,8 @@
 $ ->
-  $.get "/persons", (persons) ->
-    $.each persons, (index, person) ->
-      name = $("<div>").addClass("name").text person.name
-      age = $("<div>").addClass("age").text person.age
-      $("#persons").append $("<li>").append(name).append(age)
+  $.get "/users", (users) ->
+    $.each users, (index, user) ->
+      name = $("<div>").addClass("name").text user.name
+      username = $("<div>").addClass("username").text user.username
+      email = $("<div>").addClass("email").text user.email
+      password = $("<div>").addClass("password").text user.password
+      $("#users").append $("<li>").append(name).append(username).append(email).append(password)
