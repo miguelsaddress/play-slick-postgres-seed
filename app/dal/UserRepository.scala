@@ -5,6 +5,7 @@ import play.api.db.slick.DatabaseConfigProvider
 import slick.jdbc.JdbcProfile
 
 import models.User
+import util.{ PasswordExtensions => Password }
 
 import scala.concurrent.{ Future, ExecutionContext }
 
@@ -68,7 +69,7 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
       // returned id
       into ((uData, id) => User(id, uData._1, uData._2, uData._3, uData._4))
     // And finally, insert the User into the database
-    ) += (name, username, email, password)
+    ) += (name, username, email, Password(password).hash)
   }
 
   /**
@@ -77,4 +78,5 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
   def list(): Future[Seq[User]] = db.run {
     users.result
   }
+
 }
