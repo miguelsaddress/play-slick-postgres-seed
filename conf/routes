@@ -9,7 +9,8 @@
 
 
 # Home page
-GET     /                         controllers.UserController.index
+GET     /                         controllers.UserController.signUp
+GET     /signUp                   controllers.UserController.signUp
 POST    /user                     controllers.UserController.addUser
 GET     /users                    controllers.UserController.getUsers
 
