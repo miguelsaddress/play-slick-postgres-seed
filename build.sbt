@@ -21,12 +21,13 @@ libraryDependencies ++= Seq(
 
 // Testing Deps
 libraryDependencies ++= Seq( 
+ specs2 % Test,
  "com.h2database" % "h2" % "1.4.194" % Test,
  "org.scalatestplus.play" %% "scalatestplus-play" % "3.0.0" % "test"
 )
 
 /* config for testing */
-javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
+//javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
 
   
 

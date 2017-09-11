@@ -1,8 +1,8 @@
 TODO
 
 + Hash password => test that password given to create user and password stored are different
-- Make username unique => test that two users cannot have the same value
-- Make email unique => test that two users cannot have the same value
++ Make username unique => test that two users cannot have the same value
++ Make email unique => test that two users cannot have the same value
 
 - Make signup page
 - Redirect to Dashboard on signup, display user name

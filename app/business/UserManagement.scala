@@ -1,15 +1,19 @@
 package business
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 import javax.inject._
 import play.api.data.Form
 import play.api.data.Forms._
 
 import dal.UserRepository
+import dal.UserRepository.Failures._
 import models.User
 import business.adt.SignUpData
+import util.{ PasswordExtensions => Password }
 
+@Singleton
 class UserManagement @Inject() (userRepository: UserRepository) {
     lazy val signUpForm: Form[SignUpData] = Form {
       mapping(
@@ -20,8 +24,17 @@ class UserManagement @Inject() (userRepository: UserRepository) {
       )(SignUpData.apply)(SignUpData.unapply)
     }
 
-    def signUp(data: SignUpData): Future[User] = {
-        userRepository.create(data.name, data.username, data.email, data.password)
+    def signUp(data: SignUpData)(implicit ec: ExecutionContext): Future[Either[String, User]] = {
+        val user = User(data.name, data.username, data.email, Password(data.password).hash)
+        userRepository.add(user) map { eitherUserOrFailure => eitherUserOrFailure match {
+          case Right(user) => Right(user)
+          case Left(failure) => failure match {
+            case EmailTaken => Left("emailTaken")
+            case UsernameTaken => Left("usernameTaken")
+            case _ => Left("unknownError")
+          } 
+        }
+      }
     }
 
     def fullList(): Future[Seq[User]] = {

@@ -11,6 +11,7 @@ import play.api.libs.json.Json
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
+import dal.UserRepository.Failures._
 
 import org.webjars.play.WebJarsUtil
 
@@ -39,16 +40,15 @@ class UserController @Inject()(
    * This is asynchronous, since we're invoking the asynchronous methods on UserManagement layerº.
    */
   def addUser = Action.async { implicit request =>
-    // Bind the form first, then fold the result, passing a function to handle errors, and a function to handle succes.
     signUpForm.bindFromRequest.fold(
       errorForm => {
         Future.successful(Ok(views.html.signup(errorForm)))
       },
       signUpData => {
-        users.signUp(signUpData).map { _ =>
-          //should redirect to a dashboard
-          Redirect(routes.UserController.signUp)
-        }
+        users.signUp(signUpData) map { r => r match {
+          case Right(user) => Redirect(routes.UserController.signUp)
+          case Left(error) => Redirect(routes.UserController.signUp).flashing("error" -> Messages(error))
+        }}
       }
     )
   }

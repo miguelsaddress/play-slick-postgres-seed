@@ -3,11 +3,10 @@ package dal
 import javax.inject.{ Inject, Singleton }
 import play.api.db.slick.DatabaseConfigProvider
 import slick.jdbc.JdbcProfile
-
+import scala.util.{ Try, Success, Failure }
 import models.User
-import util.{ PasswordExtensions => Password }
-
 import scala.concurrent.{ Future, ExecutionContext }
+import org.postgresql.util.PSQLException
 
 /**
  * A repository for users.
@@ -23,6 +22,7 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
   // The second one brings the Slick DSL into scope, which lets you define the table and other queries.
   import dbConfig._
   import profile.api._
+  import UserRepository.Failures._
 
   /**
    * Here we define the table. It will have a name of users
@@ -43,10 +43,10 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
      *
      * It defines how the columns are converted to and from the User object.
      *
-     * In this case, we are simply passing the id, name and page parameters to the User case classes
+     * In this case, we are simply passing the User parameters to the User case classes
      * apply and unapply methods.
      */
-    def * = (id, name, username, email, password) <> ((User.apply _).tupled, User.unapply)
+    def * = (name, username, email, password, id) <> ((User.apply _).tupled, User.unapply)
   }
 
   /**
@@ -55,22 +55,32 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
   private val users = TableQuery[UsersTable]
 
   /**
-   * Create a User with the given name and age.
-   *
-   * This is an asynchronous operation, it will return a future of the created User, which can be used to obtain the
-   * id for that User.
+   * adds a User to the collection of users
+   * 
+   * http://slick.lightbend.com/doc/3.1.0/queries.html#inserting @see returning into
+   * 
+   * 
+   * org.postgresql.util.PSQLException: ERROR: duplicate key value violates unique constraint "users_username_key"
+  Detail: Key (username)=(mamoreno) already exists.
    */
-  def create(name: String, username: String, email: String, password: String): Future[User] = db.run {
-    // We create a projection of just the user columns, since we're not inserting a value for the id column
-    (users.map(u => (u.name, u.username, u.email, u.password))
-      // Now define it to return the id, because we want to know what id was generated for the User
-      returning users.map(_.id)
-      // And we define a transformation for the returned value, which combines our original parameters with the
-      // returned id
-      into ((uData, id) => User(id, uData._1, uData._2, uData._3, uData._4))
-    // And finally, insert the User into the database
-    ) += (name, username, email, Password(password).hash)
-  }
+  def add(user:User): Future[Either[UserRepositoryFailure, User]] = db.run {
+    val insertReturningUserWithIdQuery = 
+      users returning users.map(_.id) into ((user,id) => user.copy(id=id))
+      (insertReturningUserWithIdQuery += user).asTry 
+  } map { res => 
+    res match {
+      case Success(user) => Right(user)
+      case Failure(e: PSQLException) => {
+        val msg = e.getMessage()
+        msg match {
+          case _ if msg.contains("users_username_key") => Left(UsernameTaken)
+          case _ if msg.contains("users_email_key") => Left(EmailTaken)
+          case _ => Left(DBFailure)
+        }
+      }
+      case Failure(_) => Left(DBFailure)
+    }
+  }      
 
   /**
    * List all the users in the database.
@@ -79,4 +89,13 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
     users.result
   }
 
+}
+
+object UserRepository {
+  object Failures {
+    sealed trait UserRepositoryFailure
+    object DBFailure extends UserRepositoryFailure
+    object UsernameTaken extends UserRepositoryFailure  
+    object EmailTaken extends UserRepositoryFailure
+  }
 }
