@@ -4,13 +4,13 @@ TODO
 + Make username unique => test that two users cannot have the same value
 + Make email unique => test that two users cannot have the same value
 
-- Make signup page
-- Redirect to Dashboard on signup, display user name
-- Make signup endpoints
++ Make signup page
++ Make signup endpoints
++ Redirect to Dashboard on signup
 - Make login page (b3) with remember me feature
 - Make login endpoint
 - Make auth Actions (Cookie Based)
-
+- Display user name when logged in
 
 
 - Send confirmation email after signup

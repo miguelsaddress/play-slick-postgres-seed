@@ -31,7 +31,7 @@ class UserController @Inject()(
    * GET signup view.
    */
   def signUp = Action { implicit request =>
-    Ok(views.html.signup(signUpForm))
+    Ok(views.html.user.signup(signUpForm))
   }
 
   /**
@@ -42,23 +42,14 @@ class UserController @Inject()(
   def addUser = Action.async { implicit request =>
     signUpForm.bindFromRequest.fold(
       errorForm => {
-        Future.successful(Ok(views.html.signup(errorForm)))
+        Future.successful(Ok(views.html.user.signup(errorForm)))
       },
       signUpData => {
         users.signUp(signUpData) map { r => r match {
-          case Right(user) => Redirect(routes.UserController.signUp)
+          case Right(user) => Redirect(routes.DashboardController.index)
           case Left(error) => Redirect(routes.UserController.signUp).flashing("error" -> Messages(error))
         }}
       }
     )
-  }
-
-  /**
-   * A REST endpoint that gets all the users as JSON.
-   */
-  def getUsers = Action.async { implicit request =>
-    users.fullList.map { users =>
-      Ok(Json.toJson(users))
-    }
   }
 }
